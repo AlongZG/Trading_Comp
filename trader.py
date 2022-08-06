@@ -1,5 +1,5 @@
 from project.solution.config import trading_config
-import numpy as np
+import time
 
 
 class PositionAllocator:
@@ -72,19 +72,30 @@ class PositionAllocator:
     def calc_trade_position(self):
         # TODO speed up / test performance
         # TODO consider short
+        start_time = time.time()
 
         trade_position_info = {}
         for stock_id in self.target_position_info:
             # if new position, open to target, else calc the diff
             if stock_id not in self.current_position_info:
-                trade_position_info[stock_id] = self.target_position_info[stock_id]
+                trade_position = self.target_position_info[stock_id]
             else:
-                trade_position_info[stock_id] = self.target_position_info[stock_id] \
+                trade_position = self.target_position_info[stock_id] \
                                                 - self.current_position_info[stock_id]['share']
+            if abs(trade_position) > 1e-5:
+                trade_position_info[stock_id] = trade_position
+
         for stock_id in self.current_position_info:
             if stock_id in self.target_position_info:
                 pass
             else:
-                trade_position_info[stock_id] = (-1) * self.current_position_info[stock_id]['share']
+                trade_position = (-1) * self.current_position_info[stock_id]['share']
+                if abs(trade_position) > 1e-5:
+                    trade_position_info[stock_id] = trade_position
+
+        trade_position_info = {k: v for k, v in sorted(trade_position_info.items(), key=lambda kv: (kv[1], kv[0]))}
+
+        end_time = time.time()
+        print(f"Allocator time cost {end_time - start_time}s")
 
         return trade_position_info
