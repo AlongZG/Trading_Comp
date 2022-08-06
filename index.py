@@ -1,6 +1,8 @@
 import os
 import sys
-from project.solution.allocator import PositionAllocator
+from project.solution.trader import PositionAllocator
+from project.solution.config import trading_config
+import project.solution.model_monster as model
 
 sys.path = ['../'] + sys.path
 sys.path = ['../../'] + sys.path
@@ -14,15 +16,6 @@ def model_predict(stock_infos, demo_num=10):
     return resp
 
 
-def demo_printer(resp_question, stock_infos, resp_user):
-    num_stocks = len(stock_infos)
-    print(f"num_stocks {num_stocks}")
-    if num_stocks > 0:
-        stock_info = resp_question.stock_infos[0]  # stock_infos是一个列表，我们取出一个股票示例
-        print(f'    capital = {resp_user.capital}')  # 当前总资产
-        print(f'    cash = {resp_user.cash}')  # 总现金
-        print(f'    available_cash = {resp_user.available_cash}')  # 可用现金
-
 
 # ======================================== Your Solution ========================================
 class Solution:
@@ -30,35 +23,39 @@ class Solution:
     def main(date, ti, resp_question, resp_user):
         bid_info_list = []
 
+        if (ti in trading_config['a_market_close_tick']) or (
+                ti in trading_config['h_market_close_tick']):
+            return bid_info_list
+
         stock_infos = resp_question.stock_infos
         positions_info = resp_user.positions
-        demo_printer(resp_question, stock_infos, resp_user)
-        model_resp = model_predict(stock_infos)
-
         current_capital = resp_user.capital
+
+        model_resp = model.predict(stock_infos)
+
         position_allocator = PositionAllocator(stock_infos=stock_infos,
                                                model_resp=model_resp,
                                                capital=current_capital,
-                                               positions_info=positions_info)
+                                               positions_info=positions_info,
+                                               ti=ti)
+
         trade_position = position_allocator.calc_trade_position()
         print(f"trade_position {trade_position}")
 
-        if date == 0 and ti == 0:
-            # 初始化仓位, 假设等权重持有前10只票
+        # for stock_id in trade_position:
+        #     stock_info = [x for x in resp_question.stock_infos if x.stock_id == stock_id][0]
+        #
+        #     bid_info = bid_pb2.BidInfo()
+        #
+        #     position = trade_position[stock_id]
+        #
+        #     bid_info.stock_id = stock_id
+        #     bid_info.market_id = stock_info.market_id
+        #     bid_info.bid_type = 0
+        #     bid_info.bid_shares = position
+        #     bid_info.bid_price = stock_info.sell_infos.prices[-1]
+        #     bid_info_list.append(bid_info)
 
-            for stock_id in trade_position:
-                stock_info = [x for x in resp_question.stock_infos if x.stock_id == stock_id][0]
-
-                bid_info = bid_pb2.BidInfo()
-
-                position = trade_position[stock_id]
-
-                bid_info.stock_id = stock_id
-                bid_info.market_id = stock_info.market_id
-                bid_info.bid_type = 0
-                bid_info.bid_shares = position
-                bid_info.bid_price = stock_info.sell_infos.prices[-1]
-                bid_info_list.append(bid_info)
         return bid_info_list
 
 
