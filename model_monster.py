@@ -1,4 +1,5 @@
 import random
+random.seed(86)
 
 
 def predict(stock_infos, total_stocks=100):
