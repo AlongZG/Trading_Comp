@@ -89,7 +89,7 @@ class PositionAllocator:
             if stock_id in self.target_position_info:
                 pass
             else:
-                trade_position = (-1) * self.current_position_info[stock_id]['share']
+                trade_position = (-1) * self.current_position_info[stock_id]['tradable_share']
                 if abs(trade_position) > 1e-5:
                     trade_position_info[stock_id] = trade_position
 

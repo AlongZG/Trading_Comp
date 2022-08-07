@@ -1,7 +1,8 @@
 import os
 import sys
+import time
 from project.solution.trader import PositionAllocator
-from project.solution.utils import print_resp_bid
+from project.solution.utils import print_resp_bid, print_resp_user, select_stock_info
 from project.solution.executor import Executor
 from project.solution.config import trading_config
 import project.solution.model_monster as model
@@ -16,13 +17,21 @@ from input.contest8267.contest.protos._pyprotos import bid_pb2
 class Solution:
     # a solution demo, define your solution here, good luck!
     def main(date, ti, resp_question, resp_user):
+        start_time = time.time()
         bid_info_list = []
 
         if (ti in trading_config['a_market_close_tick']) or (
                 ti in trading_config['h_market_close_tick']):
             return bid_info_list
 
-        stock_infos = resp_question.stock_infos
+        if (trading_config['trading_mode'] == 'A') and (ti in trading_config['a_market_suspend_tick']):
+            return bid_info_list
+
+        stock_infos = select_stock_info(resp_question.stock_infos)
+        # A_H trading calendar not match
+        if len(stock_infos) == 0:
+            return bid_info_list
+
         positions_info = resp_user.positions
         current_capital = resp_user.capital
 
@@ -35,10 +44,13 @@ class Solution:
                                                ti=ti)
 
         trade_position = position_allocator.calc_trade_position()
+        print(f"current_position {position_allocator.current_position_info}")
         print(f"trade_position {trade_position}")
 
         executor = Executor(stock_infos, trade_position)
         bid_info_list = executor.generate_bid_info_list()
+        end_time = time.time()
+        print(f"Ti {ti} time cost {end_time - start_time}s")
 
         return bid_info_list
 
@@ -73,6 +85,8 @@ def main_pipeline(uclient):
 
         # check cur info (optional)
         resp_user_2 = uclient.user_info()
+        print_resp_user(resp_user_2, stage='after_bid', is_print=debug)
+
 
     # print your final score (optional)
     resp_user_final = uclient.user_info()
@@ -82,3 +96,4 @@ def main_pipeline(uclient):
 
 def invoke(uclient):
     main_pipeline(uclient)
+

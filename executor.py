@@ -29,7 +29,7 @@ class Executor:
 
         bid_info.stock_id = stock_info.stock_id
         bid_info.market_id = stock_info.market_id
-        bid_info.bid_shares = trade_position
+        bid_info.bid_shares = abs(trade_position)
 
         bid_info.bid_type = 0 if trade_position >= 0 else 1
         bid_info.bid_price = stock_info.sell_infos.prices[-1] if trade_position >= 0 \
