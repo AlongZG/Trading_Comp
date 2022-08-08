@@ -44,6 +44,6 @@ def print_resp_user(resp_user, stage='before_bid', is_print=False):
 
 def select_stock_info(stock_infos):
     valid_stock_list = joblib.load(trading_config['valid_stock_path'])
-    selected_stock_infos = [stock_info for stock_info in stock_infos if stock_info.stock_id in valid_stock_list]
+    selected_stock_infos = [stock_info for stock_info in stock_infos if (stock_info.stock_id in valid_stock_list)]
     return selected_stock_infos
 

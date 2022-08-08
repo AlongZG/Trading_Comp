@@ -5,7 +5,7 @@ from project.solution.trader import PositionAllocator
 from project.solution.utils import print_resp_bid, print_resp_user, select_stock_info
 from project.solution.executor import Executor
 from project.solution.config import trading_config
-import project.solution.model_monster as model
+from project.solution import model_hub
 
 sys.path = ['../'] + sys.path
 sys.path = ['../../'] + sys.path
@@ -34,12 +34,14 @@ class Solution:
 
         positions_info = resp_user.positions
         current_capital = resp_user.capital
+        available_cash = resp_user.available_cash
 
-        model_resp = model.predict(stock_infos)
+        model_resp = model_hub.strategy_monster_predict(stock_infos)
 
         position_allocator = PositionAllocator(stock_infos=stock_infos,
                                                model_resp=model_resp,
                                                capital=current_capital,
+                                               available_cash=available_cash,
                                                positions_info=positions_info,
                                                ti=ti)
 
