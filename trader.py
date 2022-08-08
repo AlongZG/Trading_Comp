@@ -1,13 +1,16 @@
 from project.solution.config import trading_config
+from project.solution.risk_crontrol import cash_limiter
 import time
 
 
 class PositionAllocator:
-    def __init__(self, stock_infos, model_resp: dict, capital: float, positions_info,
-                 ti: int):
+    def __init__(self, stock_infos, model_resp: dict, capital: float,
+                 available_cash: float, positions_info, ti: int):
+
         self.stock_infos = stock_infos
         self.target_weight_info = model_resp
         self.capital = capital
+        self.available_cash = available_cash
         self.position_info = positions_info
         self.ti = ti
         self.__stock_price_info = None
@@ -21,6 +24,13 @@ class PositionAllocator:
             return 'h'
         else:
             return 'both'
+
+    @property
+    def is_initial_position(self):
+        if abs(self.available_cash - self.capital) < 1e3:
+            return True
+        else:
+            return 0
 
     @property
     def stock_price_info(self):
@@ -71,7 +81,6 @@ class PositionAllocator:
 
     def calc_trade_position(self):
         # TODO speed up / test performance
-        # TODO consider short
         start_time = time.time()
 
         trade_position_info = {}
@@ -94,7 +103,8 @@ class PositionAllocator:
                     trade_position_info[stock_id] = trade_position
 
         trade_position_info = {k: v for k, v in sorted(trade_position_info.items(), key=lambda kv: (kv[1], kv[0]))}
-
+        trade_position_info = cash_limiter(trade_position_info, self.stock_price_info, self.available_cash,
+                                           is_initial_position=self.is_initial_position)
         end_time = time.time()
         print(f"Allocator time cost {end_time - start_time}s")
 
