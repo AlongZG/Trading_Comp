@@ -30,14 +30,13 @@ class Solution:
 
         select_stock_info_start_time = time.time()
         stock_infos = select_stock_info(resp_question.stock_infos, valid_stock_list)
-        df_market_info = market_info_parser(stock_infos)
-        print(df_market_info.head())
-        select_stock_info_end_time = time.time()
-        print(f"parse_stock_info time cost {select_stock_info_end_time - select_stock_info_start_time}s")
-
         # A_H trading calendar not match
         if len(stock_infos) == 0:
             return bid_info_list
+
+        df_market_info = market_info_parser(stock_infos)
+        select_stock_info_end_time = time.time()
+        print(f"parse_stock_info time cost {select_stock_info_end_time - select_stock_info_start_time}s")
 
         positions_info = resp_user.positions
         current_capital = resp_user.capital
@@ -102,7 +101,6 @@ def main_pipeline(uclient):
         # check cur info (optional)
         resp_user_2 = uclient.user_info()
         print_resp_user(resp_user_2, stage='after_bid', is_print=debug)
-
 
     # print your final score (optional)
     resp_user_final = uclient.user_info()
