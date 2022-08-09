@@ -5,6 +5,9 @@ trading_config = {
     'h_market_close_tick': [0, 33],
     'valid_stock_path': '/home/mw/project/solution/valid_A.pkl',
     'trading_mode': 'A',
-    'cash_waring_floor': 50000
+    'cash_waring_floor':50000,
+    'model_ranger_path': '/home/mw/project/solution/model/lightgbm.pkl',
+    'holding_stocks': 100,
+    'total_position_limiter': 0.9
 
 }

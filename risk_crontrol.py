@@ -42,3 +42,5 @@ def cash_limiter(trade_infos, current_stock_info, available_cash, is_initial_pos
     else:
         limited_trade_position_infos = trade_infos
     return limited_trade_position_infos
+
+# TODO add trade volume predict
