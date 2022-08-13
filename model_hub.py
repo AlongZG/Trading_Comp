@@ -13,12 +13,10 @@ def strategy_monster_predict(stock_infos, total_stocks=10):
 
 def strategy_ranger_predict(df_market_info, model_ranger,
                             holding_stocks=trading_config['holding_stocks']):
-    df_market_info['ask_bid_spread'] = df_market_info['askprice_01'].values - \
-                                       df_market_info['bidprice_01'].values
-
     df_market_info['pred'] = model_ranger.predict(df_market_info.values)
-    target_portfolio_df = df_market_info.sort_values('pred', ascending=False).iloc[:holding_stocks][[
-        'stock_id']]
-    target_portfolio_df['weights'] = trading_config['total_position_limiter'] / holding_stocks
-    result = target_portfolio_df.set_index('stock_id').to_dict()['weights']
+    target_portfolio_df = df_market_info.sort_values('pred', ascending=False).iloc[:holding_stocks]
+    target_stocks = target_portfolio_df['stock_id'].values
+    weights = trading_config['total_position_limiter'] / holding_stocks
+
+    result = {stock_id: weights for stock_id in target_stocks}
     return result

@@ -47,7 +47,7 @@ def select_stock_info(stock_infos, valid_stock_list):
     return selected_stock_infos
 
 
-def market_info_parser(stock_infos):
+def market_info_parser_tick(stock_infos):
     market_info_columns = ['stock_id', 'open', 'close', 'high', 'low', 'volume', 'tvr',
                            'bidprice_01', 'bidprice_02', 'bidprice_03', 'bidprice_04',
                            'bidprice_05', 'bidprice_06', 'bidprice_07', 'bidprice_08',
@@ -112,3 +112,78 @@ def market_info_parser(stock_infos):
     df_market_info.index.name = 'stock_id'
     df_market_info = df_market_info.reset_index()[market_info_columns]
     return df_market_info
+
+
+def market_info_parser(stock_infos, ti):
+    market_info_map = {(stock_info.stock_id, ti): {
+        'open': stock_info.open,
+        'close': stock_info.close,
+        'high': stock_info.high,
+        'low': stock_info.low,
+        'volume': stock_info.volume,
+        'tvr': stock_info.tvr,
+        'bidprice_01': stock_info.buy_infos.prices[0],
+        'bidprice_02': stock_info.buy_infos.prices[1],
+        'bidprice_03': stock_info.buy_infos.prices[2],
+        'bidprice_04': stock_info.buy_infos.prices[3],
+        'bidprice_05': stock_info.buy_infos.prices[4],
+        'bidprice_06': stock_info.buy_infos.prices[5],
+        'bidprice_07': stock_info.buy_infos.prices[6],
+        'bidprice_08': stock_info.buy_infos.prices[7],
+        'bidprice_09': stock_info.buy_infos.prices[8],
+        'bidprice_10': stock_info.buy_infos.prices[9],
+        'bidvolume_01': stock_info.buy_infos.volumes[0],
+        'bidvolume_02': stock_info.buy_infos.volumes[1],
+        'bidvolume_03': stock_info.buy_infos.volumes[2],
+        'bidvolume_04': stock_info.buy_infos.volumes[3],
+        'bidvolume_05': stock_info.buy_infos.volumes[4],
+        'bidvolume_06': stock_info.buy_infos.volumes[5],
+        'bidvolume_07': stock_info.buy_infos.volumes[6],
+        'bidvolume_08': stock_info.buy_infos.volumes[7],
+        'bidvolume_09': stock_info.buy_infos.volumes[8],
+        'bidvolume_10': stock_info.buy_infos.volumes[9],
+        'askprice_01': stock_info.sell_infos.prices[0],
+        'askprice_02': stock_info.sell_infos.prices[1],
+        'askprice_03': stock_info.sell_infos.prices[2],
+        'askprice_04': stock_info.sell_infos.prices[3],
+        'askprice_05': stock_info.sell_infos.prices[4],
+        'askprice_06': stock_info.sell_infos.prices[5],
+        'askprice_07': stock_info.sell_infos.prices[6],
+        'askprice_08': stock_info.sell_infos.prices[7],
+        'askprice_09': stock_info.sell_infos.prices[8],
+        'askprice_10': stock_info.sell_infos.prices[9],
+        'askvolume_01': stock_info.sell_infos.volumes[0],
+        'askvolume_02': stock_info.sell_infos.volumes[1],
+        'askvolume_03': stock_info.sell_infos.volumes[2],
+        'askvolume_04': stock_info.sell_infos.volumes[3],
+        'askvolume_05': stock_info.sell_infos.volumes[4],
+        'askvolume_06': stock_info.sell_infos.volumes[5],
+        'askvolume_07': stock_info.sell_infos.volumes[6],
+        'askvolume_08': stock_info.sell_infos.volumes[7],
+        'askvolume_09': stock_info.sell_infos.volumes[8],
+        'askvolume_10': stock_info.sell_infos.volumes[9]
+    } for stock_info in stock_infos}
+    return market_info_map
+
+
+def stocks_history_parser(resp_history, valid_stock_list, feature_list):
+    result_map = {}
+    for ti in range(27):
+        if ti not in trading_config['a_market_suspend_tick']:
+            stock_infos = resp_history.stock_list[ti].daili_stock_list
+
+            market_info_map = market_info_parser(stock_infos, ti)
+
+            result_map.update(market_info_map)
+
+    df_result = pd.DataFrame(result_map).T
+
+    df_result = df_result[df_result.index.get_level_values(0).isin(valid_stock_list)]
+    df_result = df_result.reset_index().rename(columns={'level_0': 'stock_id'})
+    df_result = df_result[feature_list]
+
+    stats = ['mean', 'std', 'min', 'max', 'first', 'last']
+    dict_stats = dict.fromkeys(df_result.columns[1:], stats)
+    df_stocks_history = df_result.groupby('stock_id').agg(dict_stats)
+    df_stocks_history.reset_index(inplace=True)
+    return df_stocks_history
