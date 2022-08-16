@@ -41,6 +41,8 @@ class Solution:
 
         model_start_time = time.time()
         model_resp = model_hub.strategy_ranger_predict(df_market_info, model)
+        print(f"model_resp {model_resp}")
+
         model_end_time = time.time()
         print(f"model time cost {model_end_time - model_start_time}s")
 

@@ -47,6 +47,11 @@ def select_stock_info(stock_infos, valid_stock_list):
     return selected_stock_infos
 
 
+def select_tradable_stocks(stock_infos):
+    tradable_stocks = [stock_info for stock_info in stock_infos if stock_info.is_tradable]
+    return tradable_stocks
+
+
 def market_info_parser_tick(stock_infos):
     market_info_columns = ['stock_id', 'open', 'close', 'high', 'low', 'volume', 'tvr',
                            'bidprice_01', 'bidprice_02', 'bidprice_03', 'bidprice_04',
@@ -115,71 +120,55 @@ def market_info_parser_tick(stock_infos):
 
 
 def market_info_parser(stock_infos, ti):
-    market_info_map = {(stock_info.stock_id, ti): {
-        'open': stock_info.open,
-        'close': stock_info.close,
-        'high': stock_info.high,
-        'low': stock_info.low,
-        'volume': stock_info.volume,
-        'tvr': stock_info.tvr,
-        'bidprice_01': stock_info.buy_infos.prices[0],
-        'bidprice_02': stock_info.buy_infos.prices[1],
-        'bidprice_03': stock_info.buy_infos.prices[2],
-        'bidprice_04': stock_info.buy_infos.prices[3],
-        'bidprice_05': stock_info.buy_infos.prices[4],
-        'bidprice_06': stock_info.buy_infos.prices[5],
-        'bidprice_07': stock_info.buy_infos.prices[6],
-        'bidprice_08': stock_info.buy_infos.prices[7],
-        'bidprice_09': stock_info.buy_infos.prices[8],
-        'bidprice_10': stock_info.buy_infos.prices[9],
-        'bidvolume_01': stock_info.buy_infos.volumes[0],
-        'bidvolume_02': stock_info.buy_infos.volumes[1],
-        'bidvolume_03': stock_info.buy_infos.volumes[2],
-        'bidvolume_04': stock_info.buy_infos.volumes[3],
-        'bidvolume_05': stock_info.buy_infos.volumes[4],
-        'bidvolume_06': stock_info.buy_infos.volumes[5],
-        'bidvolume_07': stock_info.buy_infos.volumes[6],
-        'bidvolume_08': stock_info.buy_infos.volumes[7],
-        'bidvolume_09': stock_info.buy_infos.volumes[8],
-        'bidvolume_10': stock_info.buy_infos.volumes[9],
-        'askprice_01': stock_info.sell_infos.prices[0],
-        'askprice_02': stock_info.sell_infos.prices[1],
-        'askprice_03': stock_info.sell_infos.prices[2],
-        'askprice_04': stock_info.sell_infos.prices[3],
-        'askprice_05': stock_info.sell_infos.prices[4],
-        'askprice_06': stock_info.sell_infos.prices[5],
-        'askprice_07': stock_info.sell_infos.prices[6],
-        'askprice_08': stock_info.sell_infos.prices[7],
-        'askprice_09': stock_info.sell_infos.prices[8],
-        'askprice_10': stock_info.sell_infos.prices[9],
-        'askvolume_01': stock_info.sell_infos.volumes[0],
-        'askvolume_02': stock_info.sell_infos.volumes[1],
-        'askvolume_03': stock_info.sell_infos.volumes[2],
-        'askvolume_04': stock_info.sell_infos.volumes[3],
-        'askvolume_05': stock_info.sell_infos.volumes[4],
-        'askvolume_06': stock_info.sell_infos.volumes[5],
-        'askvolume_07': stock_info.sell_infos.volumes[6],
-        'askvolume_08': stock_info.sell_infos.volumes[7],
-        'askvolume_09': stock_info.sell_infos.volumes[8],
-        'askvolume_10': stock_info.sell_infos.volumes[9]
-    } for stock_info in stock_infos}
-    return market_info_map
+    stock_infos = select_tradable_stocks(stock_infos)
+
+    res = []
+    for stock_info in stock_infos:
+        res.append([stock_info.stock_id, ti, stock_info.open, stock_info.close, stock_info.high, stock_info.low,
+                    stock_info.volume, stock_info.tvr, stock_info.buy_infos.prices[0], stock_info.buy_infos.prices[1],
+                    stock_info.buy_infos.prices[2], stock_info.buy_infos.prices[3], stock_info.buy_infos.prices[4],
+                    stock_info.buy_infos.prices[5], stock_info.buy_infos.prices[6], stock_info.buy_infos.prices[7],
+                    stock_info.buy_infos.prices[8], stock_info.buy_infos.prices[9], stock_info.buy_infos.volumes[0],
+                    stock_info.buy_infos.volumes[1], stock_info.buy_infos.volumes[2], stock_info.buy_infos.volumes[3],
+                    stock_info.buy_infos.volumes[4], stock_info.buy_infos.volumes[5], stock_info.buy_infos.volumes[6],
+                    stock_info.buy_infos.volumes[7], stock_info.buy_infos.volumes[8], stock_info.buy_infos.volumes[9],
+                    stock_info.sell_infos.prices[0], stock_info.sell_infos.prices[1], stock_info.sell_infos.prices[2],
+                    stock_info.sell_infos.prices[3], stock_info.sell_infos.prices[4], stock_info.sell_infos.prices[5],
+                    stock_info.sell_infos.prices[6], stock_info.sell_infos.prices[7], stock_info.sell_infos.prices[8],
+                    stock_info.sell_infos.prices[9], stock_info.sell_infos.volumes[0], stock_info.sell_infos.volumes[1],
+                    stock_info.sell_infos.volumes[2], stock_info.sell_infos.volumes[3],
+                    stock_info.sell_infos.volumes[4], stock_info.sell_infos.volumes[5],
+                    stock_info.sell_infos.volumes[6], stock_info.sell_infos.volumes[7],
+                    stock_info.sell_infos.volumes[8], stock_info.sell_infos.volumes[9]])
+    return res
 
 
 def stocks_history_parser(resp_history, valid_stock_list, feature_list):
-    result_map = {}
+    result_map = []
     for ti in range(27):
         if ti not in trading_config['a_market_suspend_tick']:
             stock_infos = resp_history.stock_list[ti].daili_stock_list
-
             market_info_map = market_info_parser(stock_infos, ti)
+            result_map += market_info_map
 
-            result_map.update(market_info_map)
+    df_result = pd.DataFrame(result_map)
+    df_result.columns = ['stock_id', 'ti', 'open', 'close', 'high', 'low', 'volume', 'tvr', 'bidprice_01',
+                         'bidprice_02', 'bidprice_03', 'bidprice_04', 'bidprice_05', 'bidprice_06', 'bidprice_07',
+                         'bidprice_08', 'bidprice_09', 'bidprice_10', 'bidvolume_01', 'bidvolume_02', 'bidvolume_03',
+                         'bidvolume_04', 'bidvolume_05', 'bidvolume_06', 'bidvolume_07', 'bidvolume_08', 'bidvolume_09',
+                         'bidvolume_10', 'askprice_01', 'askprice_02', 'askprice_03', 'askprice_04', 'askprice_05',
+                         'askprice_06', 'askprice_07', 'askprice_08', 'askprice_09', 'askprice_10', 'askvolume_01',
+                         'askvolume_02', 'askvolume_03', 'askvolume_04', 'askvolume_05', 'askvolume_06', 'askvolume_07',
+                         'askvolume_08', 'askvolume_09', 'askvolume_10']
+    df_result[
+        ['bidvolume_01', 'bidvolume_02', 'bidvolume_03', 'bidvolume_04', 'bidvolume_05', 'bidvolume_06', 'bidvolume_07',
+         'bidvolume_08', 'bidvolume_09', 'bidvolume_10', 'askvolume_01', 'askvolume_02', 'askvolume_03', 'askvolume_04',
+         'askvolume_05', 'askvolume_06', 'askvolume_07', 'askvolume_08', 'askvolume_09', 'askvolume_10']] = df_result[
+        ['bidvolume_01', 'bidvolume_02', 'bidvolume_03', 'bidvolume_04', 'bidvolume_05', 'bidvolume_06', 'bidvolume_07',
+         'bidvolume_08', 'bidvolume_09', 'bidvolume_10', 'askvolume_01', 'askvolume_02', 'askvolume_03', 'askvolume_04',
+         'askvolume_05', 'askvolume_06', 'askvolume_07', 'askvolume_08', 'askvolume_09', 'askvolume_10']].astype(float)
 
-    df_result = pd.DataFrame(result_map).T
-
-    df_result = df_result[df_result.index.get_level_values(0).isin(valid_stock_list)]
-    df_result = df_result.reset_index().rename(columns={'level_0': 'stock_id'})
+    df_result = df_result[df_result['stock_id'].isin(valid_stock_list)]
     df_result = df_result[feature_list]
 
     stats = ['mean', 'std', 'min', 'max', 'first', 'last']

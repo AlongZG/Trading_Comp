@@ -38,6 +38,7 @@ class PositionAllocator:
             stock_price_info = {stock_info.stock_id: stock_info.close for stock_info in self.stock_infos
                                 if (stock_info.stock_id in self.target_weight_info) or (
                                         stock_info.stock_id in self.current_position_info)}
+
             self.__stock_price_info = stock_price_info
         return self.__stock_price_info
 
@@ -86,6 +87,7 @@ class PositionAllocator:
         trade_position_info = {}
         for stock_id in self.target_position_info:
             # if new position, open to target, else calc the diff
+
             if stock_id not in self.current_position_info:
                 trade_position = self.target_position_info[stock_id]
             else:
@@ -98,12 +100,11 @@ class PositionAllocator:
 
         for stock_id in self.current_position_info:
             if stock_id in self.target_position_info:
-                pass
+                continue
             else:
                 trade_position = (-1) * self.current_position_info[stock_id]['tradable_share']
                 if abs(trade_position) > 1e-5:
                     trade_position_info[stock_id] = trade_position
-
         trade_position_info = {k: v for k, v in sorted(trade_position_info.items(), key=lambda kv: (kv[1], kv[0]))}
         trade_position_info = cash_limiter(trade_position_info, self.stock_price_info, self.available_cash,
                                            is_initial_position=self.is_initial_position)
