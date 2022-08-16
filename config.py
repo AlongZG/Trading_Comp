@@ -6,10 +6,10 @@ trading_config = {
     'daily_trade_ti': 1,
     'valid_stock_path': '/home/mw/project/solution/valid_A.pkl',
     'trading_mode': 'A',
-    'cash_waring_floor': 50000,
-    'model_ranger_path': '/home/mw/project/solution/model/lgb_reg.pkl',
+    'cash_waring_floor': 20000,
+    'model_ranger_path': '/home/mw/project/solution/model/lgb_reg_cv_90.pkl',
     'feature_list_path': '/home/mw/project/solution/model/feature_list.pkl',
-    'holding_stocks': 50,
-    'total_position_limiter': 0.9
+    'holding_stocks': 10,
+    'total_position_limiter': 0.98
 
 }
